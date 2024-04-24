@@ -5,7 +5,7 @@ CELERY_CONFIG = {
     "result_backend": "redis://redis:6379/1",
     "beat_schedule": {
         "print_message": {
-            "task": "app.celery_app.tasks.user_tasks.broadcast_message",
+            "task": "app.celery_app.tasks.news_tasks.broadcast_message",
             "schedule": 10.0,  # Execute every 10 seconds
         },
     },
