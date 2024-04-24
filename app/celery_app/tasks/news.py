@@ -62,7 +62,7 @@ def extract_published(entry):
     return "No published date found"
 
 
-def print_entry_details(entry):
+def process_entry(entry):
     try:
         article = {
             "title": entry.get("title", ""),
@@ -72,18 +72,22 @@ def print_entry_details(entry):
             "author": extract_author(entry),
             "image": extract_image(entry),
         }
-        print(article)
-        print()
+        return article
     except Exception as e:
-        logger.exception(f"Error printing entry details: {e}")
+        logger.exception(f"Error processing entry: {e}")
+        return None
 
 
 async def process_feed_entries(feed):
+    articles = []
     try:
         for entry in feed.entries:
-            print_entry_details(entry)
+            article = process_entry(entry)
+            if article:
+                articles.append(article)
     except Exception as e:
         logger.exception(f"Error processing feed entries: {e}")
+    return articles
 
 
 async def main():
@@ -119,12 +123,18 @@ async def main():
                 *(download_feed(session, url) for url in feed_urls)
             )
 
+            all_articles = []
             for feed in feeds:
                 if feed is not None:
-                    await process_feed_entries(feed)
+                    articles = await process_feed_entries(feed)
+                    all_articles.extend(articles)
+
+            return all_articles
         except Exception as e:
             logger.exception(f"Error in main function: {e}")
+            return []
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    articles = asyncio.run(main())
+    print(articles)

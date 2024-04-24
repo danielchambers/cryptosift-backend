@@ -1,9 +1,9 @@
 import json
+import asyncio
 import tornado.gen
-from celery.result import async_result
 from app.celery_app.celery_instance import app
 from app.redis.redis_instance import get_redis_client
-from tasks.news import main
+from .news import main
 
 redis_client = get_redis_client()
 
@@ -18,6 +18,6 @@ def async_add(x, y):
 
 @app.task
 def broadcast_message():
-    articles = async_result(main()).get()
+    articles = asyncio.run(main())
     message_json = json.dumps(articles)
     redis_client.publish("notification_channel", message_json)
