@@ -3,8 +3,7 @@ import aiohttp
 import feedparser
 import time
 from datetime import datetime
-# from .logger import logger
-import logging as logger
+from app.utils.logger import logger
 
 
 async def download_feed(session, url, retries=3, delay=5):
