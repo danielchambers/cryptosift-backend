@@ -17,8 +17,8 @@ def async_add(x, y):
 
 
 @app.task
-def broadcast_cardano_message():
-    feed_urls = [
+def broadcast_message():
+    cardano_feed_urls = [
         "https://newsbtc.com/analysis/ada/feed/",
         "https://newsbtc.com/news/cardano/feed/",
         "https://cointelegraph.com/rss/tag/cardano/",
@@ -29,15 +29,8 @@ def broadcast_cardano_message():
         "https://zycrypto.com/tag/ada/feed/",
         "https://watcher.guru/news/category/cardano/feed/",
     ]
-    keywords = ["cardano", "hoskinson", "ada", "iohk", "iog", "$ada"]
-    articles = asyncio.run(fetch_and_filter_articles(feed_urls, keywords))
-    message_json = json.dumps(articles)
-    redis_client.publish("notification_channel", message_json)
 
-
-@app.task
-def broadcast_message():
-    feed_urls = [
+    generic_feed_urls = [
         "https://coindesk.com/arc/outboundfeeds/rss/",
         "https://cryptonews.com/news/feed/",
         "https://beincrypto.com/feed/",
@@ -51,7 +44,13 @@ def broadcast_message():
         "https://ambcrypto.com/feed/",
         "https://cryptoglobe.com/rss/feed.xml",
     ]
-    keywords = ["cardano", "hoskinson", "ada", "iohk", "iog", "$ada"]
-    articles = asyncio.run(fetch_and_filter_articles(feed_urls, keywords))
-    message_json = json.dumps(articles)
+
+    cardano_keywords = ["cardano", "hoskinson", "ada", "iohk", "iog", "$ada"]
+
+    cardano_feed_articles = asyncio.run(fetch_and_filter_articles(cardano_feed_urls, []))
+    generic_feed_articles = asyncio.run(fetch_and_filter_articles(generic_feed_urls, cardano_keywords))
+
+    combined_articles = cardano_feed_articles + generic_feed_articles
+
+    message_json = json.dumps(combined_articles)
     redis_client.publish("notification_channel", message_json)
