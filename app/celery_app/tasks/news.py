@@ -1,8 +1,10 @@
-import asyncio
-import aiohttp
-import feedparser
+import re
 import time
+import aiohttp
+import asyncio
+import feedparser
 from datetime import datetime
+from urllib.parse import urlparse
 from app.utils.logger import logger
 
 
@@ -62,27 +64,45 @@ def extract_published(entry):
     return "No published date found"
 
 
-def process_entry(entry):
+def process_entry(entry, keywords=None):
     try:
+        link = entry.get("link", "")
+        parsed_url = urlparse(link)
+        hostname_parts = parsed_url.hostname.split(".")
+        organization = ".".join(hostname_parts[-2:])
+
         article = {
+            "organization": organization,
             "title": entry.get("title", ""),
-            "link": entry.get("link", ""),
+            "link": link,
             "description": entry.get("description", ""),
             "published": extract_published(entry),
             "author": extract_author(entry),
             "image": extract_image(entry),
         }
-        return article
+
+        # Check if any of the keywords are present in the title or description as whole words
+        if keywords:
+            if any(
+                re.search(r"\b" + re.escape(keyword.lower()) + r"\b", article["title"].lower())
+                or re.search(r"\b" + re.escape(keyword.lower()) + r"\b", article["description"].lower())
+                for keyword in keywords
+            ):
+                return article
+            else:
+                return None
+        else:
+            return article
     except Exception as e:
         logger.exception(f"Error processing entry: {e}")
         return None
 
 
-async def process_feed_entries(feed):
+async def process_feed_entries(feed, keywords=None):
     articles = []
     try:
         for entry in feed.entries:
-            article = process_entry(entry)
+            article = process_entry(entry, keywords)
             if article:
                 articles.append(article)
     except Exception as e:
@@ -90,33 +110,7 @@ async def process_feed_entries(feed):
     return articles
 
 
-async def main():
-    feed_urls = [
-        # image in media_content
-        # "https://newsbtc.com/analysis/ada/feed/",
-        # "https://newsbtc.com/news/cardano/feed/",
-        # "https://cointelegraph.com/rss/tag/cardano/",
-        # "https://coindesk.com/arc/outboundfeeds/rss/",
-        # "https://cryptonews.com/news/feed/",
-        # "https://cryptoslate.com/news/cardano/feed/",
-        # "https://beincrypto.com/feed/",
-        # "https://crypto.news/feed/",
-        # "https://bitcoinist.com/feed/",
-        # "https://cryptopotato.com/feed/",
-        # "https://cryptobriefing.com/feed/",
-        # image possibly in description
-        "https://dailyhodl.com/feed/",
-        # "https://news.bitcoin.com/feed/",
-        # "https://forkast.news/feed/",
-        # "https://dailycoin.com/cardano-ada/feed/",
-        # "https://ambcrypto.com/feed/",
-        # "https://zycrypto.com/tag/cardano/feed/",
-        # "https://zycrypto.com/tag/adausd/feed/",
-        # "https://zycrypto.com/tag/ada/feed/",
-        # "https://cryptoglobe.com/rss/feed.xml",
-        # "https://watcher.guru/news/category/cardano/feed/",
-    ]
-
+async def fetch_and_filter_articles(feed_urls, keywords=None):
     async with aiohttp.ClientSession() as session:
         try:
             feeds = await asyncio.gather(
@@ -126,15 +120,20 @@ async def main():
             all_articles = []
             for feed in feeds:
                 if feed is not None:
-                    articles = await process_feed_entries(feed)
+                    articles = await process_feed_entries(feed, keywords)
                     all_articles.extend(articles)
 
             return all_articles
         except Exception as e:
-            logger.exception(f"Error in main function: {e}")
+            logger.exception(f"Error in fetch_and_filter_articles function: {e}")
             return []
 
 
 if __name__ == "__main__":
-    articles = asyncio.run(main())
+    feed_urls = [
+        # "https://cointelegraph.com/rss/tag/cardano/",
+        "https://coindesk.com/arc/outboundfeeds/rss/",
+    ]
+    keywords = ["cardano", "hoskinson", "ada", "iohk", "iog", "$ada"]
+    articles = asyncio.run(fetch_and_filter_articles(feed_urls, keywords))
     print(articles)
