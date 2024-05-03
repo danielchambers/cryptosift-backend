@@ -110,7 +110,7 @@ async def process_feed_entries(feed, keywords=None):
     return articles
 
 
-async def fetch_and_filter_articles(feed_urls, keywords=None):
+async def fetch_news_data(feed_urls, keywords=None):
     async with aiohttp.ClientSession() as session:
         try:
             feeds = await asyncio.gather(
@@ -125,7 +125,7 @@ async def fetch_and_filter_articles(feed_urls, keywords=None):
 
             return all_articles
         except Exception as e:
-            logger.exception(f"Error in fetch_and_filter_articles function: {e}")
+            logger.exception(f"Error in fetch_news_data function: {e}")
             return []
 
 
@@ -135,5 +135,5 @@ if __name__ == "__main__":
         "https://coindesk.com/arc/outboundfeeds/rss/",
     ]
     keywords = ["cardano", "hoskinson", "ada", "iohk", "iog", "$ada"]
-    articles = asyncio.run(fetch_and_filter_articles(feed_urls, keywords))
+    articles = asyncio.run(fetch_news_data(feed_urls, keywords))
     print(articles)

@@ -8,7 +8,7 @@ redis_client = get_redis_client()
 
 
 @app.task
-def broadcast_discord_message():
+def broadcast_discord_data():
     servers = [
         {
             "project": "Indiego",
