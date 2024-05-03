@@ -7,6 +7,8 @@ services:
       - "8000:8000"
     depends_on:
       - redis
+    env_file:
+      - .env
 
   celery:
     build:
@@ -15,6 +17,8 @@ services:
     command: celery -A app.celery_app.celery worker --beat --loglevel=info
     depends_on:
       - redis
+    env_file:
+      - .env
 
   redis:
     image: redis

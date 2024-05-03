@@ -1,3 +1,4 @@
-from .news_tasks import async_add, broadcast_message
+from .news_tasks import broadcast_news_data
+from .discord_tasks import broadcast_discord_data
 
-__all__ = ["async_add", "broadcast_message"]
+__all__ = ["broadcast_news_data", "broadcast_discord_data"]
