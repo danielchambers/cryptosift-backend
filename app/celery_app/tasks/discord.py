@@ -250,7 +250,7 @@ async def fetch_messages(
     return []
 
 
-async def fetch_all_messages(channels):
+async def fetch_discord_data(channels):
     async with aiohttp.ClientSession() as session:
         try:
             tasks = []
@@ -271,7 +271,7 @@ async def fetch_all_messages(channels):
             ]
             return flattened_messages
         except Exception as e:
-            logger.exception(f"Error in fetch_all_messages function: {e}")
+            logger.exception(f"Error in fetch_discord_data function: {e}")
             return []
 
 
@@ -308,5 +308,5 @@ if __name__ == "__main__":
         for server in servers
         for channel in server["channels"]
     ]
-    messages = asyncio.run(fetch_all_messages(channels))
+    messages = asyncio.run(fetch_discord_data(channels))
     print(messages)
