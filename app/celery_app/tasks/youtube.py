@@ -103,18 +103,19 @@ async def fetch_video_data(
         )
 
 
-async def main() -> None:
-    keywords = ["cardano", "singularity net", "hoskinson"]
+async def fetch_youtube_data(keywords, max_results) -> List[Dict[str, Any]]:
     event_type = "completed"
-    max_results = 1
     order = "date"
     all_videos = []
     for keyword in keywords:
         videos = await search_videos(keyword, event_type, max_results, order)
         videos_data = await get_video_data(videos)
         all_videos.extend(videos_data)
-    logger.info(all_videos)
+    return all_videos
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    keywords = ["cardano", "singularity net", "hoskinson"]
+    max_results = 1
+    videos = asyncio.run(fetch_youtube_data(keywords, max_results))
+    logger.info(videos)
