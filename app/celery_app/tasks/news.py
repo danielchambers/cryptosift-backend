@@ -136,4 +136,4 @@ if __name__ == "__main__":
     ]
     keywords = ["cardano", "hoskinson", "ada", "iohk", "iog", "$ada"]
     articles = asyncio.run(fetch_news_data(feed_urls, keywords))
-    print(articles)
+    logger.info(articles)

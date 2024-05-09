@@ -4,3 +4,4 @@ redis==4.3.4
 python-dotenv
 aiohttp
 feedparser
+google-api-python-client
